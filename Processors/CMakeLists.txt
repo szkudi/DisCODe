@@ -21,3 +21,6 @@ ADD_PROCESSOR(MS_Sign_Decide)
 ADD_PROCESSOR(MS_Barcode_Macro)
 ADD_PROCESSOR(MS_Barcode_Prepare)
 ADD_PROCESSOR(MS_Barcode_Decide)
+
+ADD_PROCESSOR(KS_CvMat2MagickImage)
+ADD_PROCESSOR(KS_MagickImage2CvMat)

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Task>
+	<!-- List of components -->
+	<Components>
+		<Prep1 type="KS_CvMat2MagickImage" thread="Thread1" group="s1">
+		</Prep1>
+	
+		<Prep2 type="KS_MagickImage2CvMat" thread="Thread1" groups="s1">
+		</Prep2>
+
+		<Window type="CvWindow" thread="Thread1" group="s1">
+			<title>Preview</title>
+		</Window>
+	</Components>
+
+	<!-- Threads of execution -->
+	<Executors>
+		<Thread1 type="continous">
+			<main_component>Prep1</main_component>
+		</Thread1>
+	</Executors>
+
+	<!-- Event connections -->
+	<Events>
+		<Event source="Prep1.newImage"    destination="Prep2.onNewImage"/>
+		<Event source="Prep2.newImage"	 destination="Window.onNewImage"/>
+	</Events>
+
+	<!-- Data stream assignments -->
+	<DataStreams>
+		
+		<Prep1>
+			<in_img type="in" group="s1"/>
+			<out_img type="out" group="s1"/>	
+		</Prep1>
+
+		<Prep2>
+			<in_img type="in" group="s1"/>
+			<out_img type="out" group="s1"/>	
+		</Prep2>
+				
+		<Window>
+			<in_img  type="in" group="s1"/>
+		</Window>
+	</DataStreams>
+
+</Task>
