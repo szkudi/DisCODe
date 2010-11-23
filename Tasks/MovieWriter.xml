@@ -6,7 +6,7 @@
 		</Source>
 
 		<Sink type="CvVideoWriter" thread="Thread1" group="s1">
-			<filename>output.avi</filename>
+			<filename>/tmp/output.avi</filename>
 			<fourcc>XVID</fourcc>
 		</Sink>
 		
@@ -17,7 +17,7 @@
 
 	<!-- Threads of execution -->
 	<Executors>
-		<Thread1 type="continous">
+		<Thread1 type="continuous">
 			<main_component>Source</main_component>
 		</Thread1>
 	</Executors>
