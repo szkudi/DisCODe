@@ -11,6 +11,6 @@ include_directories( . Base Core Common Types ${Boost_INCLUDE_DIR} /usr/local/in
 
 # Create an executable file from sources:
 ADD_LIBRARY(KS_MagickImage2CvMat SHARED ${files})
-TARGET_LINK_LIBRARIES(KS_MagickImage2CvMat ${OpenCV_LIBS} ${DisCODe_LIBRARIES})
+TARGET_LINK_LIBRARIES(KS_MagickImage2CvMat ${OpenCV_LIBS} ${DisCODe_LIBRARIES} /usr/local/lib/libMagick++.so)
 
 INSTALL_PROCESSOR(KS_MagickImage2CvMat)

@@ -6,6 +6,7 @@
  */
 
 #include "KS_MagickImage2CvMat.hpp"
+#include "Logger.hpp"
 
 namespace Processors{
 
@@ -13,17 +14,17 @@ namespace MI2CvMat {
 
 KS_MagickImage2CvMat::KS_MagickImage2CvMat(const std::string & name) : Base::Component(name)
 {
-	LOG(TRACE) << "Hello KS_MagickImage2CvMat\n";
+	LOG(LTRACE) << "Hello KS_MagickImage2CvMat\n";
 }
 
 KS_MagickImage2CvMat::~KS_MagickImage2CvMat()
 {
-	LOG(TRACE) << "Good bye KS_MagickImage2CvMat\n";
+	LOG(LTRACE) << "Good bye KS_MagickImage2CvMat\n";
 }
 
 bool KS_MagickImage2CvMat::onInit()
 {
-	LOG(TRACE) << "KS_MagickImage2CvMat::initialize\n";
+	LOG(LTRACE) << "KS_MagickImage2CvMat::initialize\n";
 
 	h_onNewImage.setup(this, &KS_MagickImage2CvMat::onNewImage);
 	registerHandler("onNewImage", &h_onNewImage);
@@ -39,14 +40,14 @@ bool KS_MagickImage2CvMat::onInit()
 
 bool KS_MagickImage2CvMat::onFinish()
 {
-	LOG(TRACE) << "KS_MagickImage2CvMat::finish\n";
+	LOG(LTRACE) << "KS_MagickImage2CvMat::finish\n";
 
 	return true;
 }
 
 bool KS_MagickImage2CvMat::onStep()
 {
-	LOG(TRACE) << "KS_MagickImage2CvMat::step\n";
+	LOG(LTRACE) << "KS_MagickImage2CvMat::step\n";
 	return true;
 }
 
@@ -62,28 +63,41 @@ bool KS_MagickImage2CvMat::onStart()
 
 void KS_MagickImage2CvMat::onNewImage()
 {
-	LOG(TRACE) << "KS_MagickImage2CvMat::onNewImage\n";
+	LOG(LTRACE) << "KS_MagickImage2CvMat::onNewImage\n";
 	try {
 		Magick::Image img = in_img.read();
 
 		cv::Size size;
+		cv::Mat mimg;
 
 		size.height = img.size().height();
 		size.width = img.size().width();
 
-		char pixels[size.width * size.height];
+		char *pixels;
 
-		img.write(0, 0, size.width, size.height, "RGB", MagickCore::CharPixel, pixels);
+		Magick::ColorspaceType ct = img.colorSpace();
 
-		cv::Mat mimg(size, CV_8UC3, pixels );
+		if(ct == Magick::RGBColorspace){
+//			std::cout << "AFTER:: RGB channels" << std::endl;
+			pixels = (char*)malloc(sizeof(char) * 3 * size.height * size.width);
+			img.write(0, 0, size.width, size.height, "BGR", MagickCore::CharPixel, pixels);
+			mimg = cv::Mat(size, CV_8UC3, pixels );
+		}
+		else if(ct == Magick::GRAYColorspace){
+//			std::cout << "AFTER:: Single channel" << std::endl;
+			pixels = (char*)malloc(sizeof(char) * size.height * size.width);
+			img.write(0, 0, size.width, size.height, "G", MagickCore::CharPixel, pixels);
+			mimg = cv::Mat(size, CV_8UC1, pixels );
+		}
 
 		out_img.write(mimg);
 
 		newImage->raise();
 	} catch (...) {
-		LOG(ERROR) << "KS_MagickImage2CvMat::onNewImage failed\n";
+		LOG(LERROR) << "KS_MagickImage2CvMat::onNewImage failed\n";
 	}
 
 }
 
-}
+}//: namespace IM2CvMat
+}//: namespace Processors

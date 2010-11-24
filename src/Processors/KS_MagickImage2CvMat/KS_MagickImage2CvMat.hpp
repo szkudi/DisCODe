@@ -21,8 +21,6 @@
 
 #include <ImageMagick/Magick++.h>
 
-#include <sstream>
-
 namespace Processors{
 
 namespace MI2CvMat {
@@ -56,7 +54,7 @@ public:
 	/*!
 	 * Constructor
 	 */
-	KS_MagickImage2CvMat();
+	KS_MagickImage2CvMat(const std::string & name = "");
 
 	/*!
 	 * Destructor

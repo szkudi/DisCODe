@@ -7,24 +7,30 @@
 
 #include <memory>
 #include <string>
+#include <iostream>
 
 #include "KS_CvMat2MagickImage.hpp"
+#include "Logger.hpp"
+
+#include <vector>
+
 namespace Processors {
 namespace CvMat2MI {
 
 KS_CvMat2MagickImage::KS_CvMat2MagickImage(const std::string & name) : Base::Component(name)
 {
-	LOG(TRACE) << "Hello KS_CvMat2MagickImage\n";
+	LOG(LTRACE) << "Hello KS_CvMat2MagickImage\n";
+
 }
 
 KS_CvMat2MagickImage::~KS_CvMat2MagickImage()
 {
-	LOG(TRACE) << "Good bye KS_CvMat2MagickImage\n";
+	LOG(LTRACE) << "Good bye KS_CvMat2MagickImage\n";
 }
 
 bool KS_CvMat2MagickImage::onInit()
 {
-	LOG(TRACE) << "KS_CvMat2MagickImage::initialize\n";
+	LOG(LTRACE) << "KS_CvMat2MagickImage::initialize\n";
 
 	h_onNewImage.setup(this, &KS_CvMat2MagickImage::onNewImage);
 	registerHandler("onNewImage", &h_onNewImage);
@@ -40,14 +46,14 @@ bool KS_CvMat2MagickImage::onInit()
 
 bool KS_CvMat2MagickImage::onFinish()
 {
-	LOG(TRACE) << "KS_CvMat2MagickImage::finish\n";
+	LOG(LTRACE) << "KS_CvMat2MagickImage::finish\n";
 
 	return true;
 }
 
 bool KS_CvMat2MagickImage::onStep()
 {
-	LOG(TRACE) << "KS_CvMat2MagickImage::step\n";
+	LOG(LTRACE) << "KS_CvMat2MagickImage::step\n";
 	return true;
 }
 
@@ -63,26 +69,28 @@ bool KS_CvMat2MagickImage::onStart()
 
 void KS_CvMat2MagickImage::onNewImage()
 {
-	LOG(TRACE) << "KS_CvMat2MagickImage::onNewImage\n";
+	LOG(LTRACE) << "KS_CvMat2MagickImage::onNewImage\n";
 	try {
 		cv::Mat img = in_img.read();
 
-		img.convertTo(img, CV_8UC3);
-
-
-//		Magick::Blob blob(img.data, img.rows * img.cols);
 		Magick::Image mimg;
 
 		cv::Size size = img.size();
 
-		mimg.read(size.width, size.height, "RGB", MagickCore::CharPixel, (void *)img.data);
-//		mimg.read(blob);
+		if(img.channels() == 1){
+//			std::cout << "BEFORE: Single channel" << std::endl;
+			mimg.read(size.width, size.height, "I", MagickCore::CharPixel, img.datastart);
+		}
+		else if(img.channels() == 3){
+//			std::cout << "BEFORE: RGB channels" << std::endl;
+			mimg.read(size.width, size.height, "BGR", MagickCore::CharPixel, img.datastart);
+		}
 
 		out_img.write(mimg);
 
 		newImage->raise();
 	} catch (...) {
-		LOG(ERROR) << "KS_CvMat2MagickImage::onNewImage failed\n";
+		LOG(LERROR) << "KS_CvMat2MagickImage::onNewImage failed\n";
 	}
 
 }
