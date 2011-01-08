@@ -105,7 +105,7 @@ void KS_BarcodeReader::onNewImage()
 
 		    Ref<BinaryBitmap> image(new BinaryBitmap(binarizer));
 		    zxing::qrcode::QRCodeReader reader;
-		    Ref<Result> result(reader.decode(image));
+		    Ref<Result> result(reader.decode(image, DecodeHints(DecodeHints::DEFAULT_HINT)));//zxing::DecodeHints::PRODUCT_HINT));
 
 		    cout << result->getText()->getText() << endl;
 		  } catch (zxing::Exception& e) {

@@ -19,7 +19,15 @@
 #include <zxing/common/Counted.h>
 #include <zxing/BinaryBitmap.h>
 #include <zxing/DecodeHints.h>
+
 #include <ImageMagick/Magick++.h>
+//#ifndef MagickPlusPlus_Header
+//#include <ImageMagick/Magick++/Include.h>
+//#include <ImageMagick/Magick++/Image.h>
+//#include <ImageMagick/Magick++/Pixels.h>
+//#include <ImageMagick/Magick++/STL.h>
+//#define MagickPlusPlus_Header
+//#endif // MagickPlusPlus_Header
 
 #include <zxing/Result.h>
 
