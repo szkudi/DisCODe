@@ -20,13 +20,6 @@
 #include <highgui.h>
 
 #include <ImageMagick/Magick++.h>
-//#ifndef MagickPlusPlus_Header
-//#include <ImageMagick/Magick++/Include.h>
-//#include <ImageMagick/Magick++/Image.h>
-//#include <ImageMagick/Magick++/Pixels.h>
-//#include <ImageMagick/Magick++/STL.h>
-//#define MagickPlusPlus_Header
-//#endif // MagickPlusPlus_Header
 
 #include <sstream>
 

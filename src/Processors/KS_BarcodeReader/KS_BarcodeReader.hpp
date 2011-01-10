@@ -21,13 +21,6 @@
 #include <zxing/DecodeHints.h>
 
 #include <ImageMagick/Magick++.h>
-//#ifndef MagickPlusPlus_Header
-//#include <ImageMagick/Magick++/Include.h>
-//#include <ImageMagick/Magick++/Image.h>
-//#include <ImageMagick/Magick++/Pixels.h>
-//#include <ImageMagick/Magick++/STL.h>
-//#define MagickPlusPlus_Header
-//#endif // MagickPlusPlus_Header
 
 #include <zxing/Result.h>
 
@@ -141,10 +134,10 @@ private:
 	int test_image_global(Magick::Image& image, string expected);
 	string get_expected(string imagefilename);
 
-	static bool raw_dump;
-	static bool show_format;
-	static bool tryHarder;
-	static bool show_filename;
+	bool raw_dump;
+	bool show_format;
+	bool tryHarder;
+	bool show_filename;
 
 	static const int MAX_EXPECTED = 1024;
 };
