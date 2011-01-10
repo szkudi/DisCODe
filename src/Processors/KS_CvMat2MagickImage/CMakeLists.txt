@@ -1,8 +1,8 @@
 # Include the directory itself as a path to include directories
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(IMAGE_MAGICK_PATH /home/kszkudla/workspace/ImageMagick)
-
+#set(IMAGE_MAGICK_PATH /home/kszkudla/workspace/ImageMagick)
+set(IMAGE_MAGICK_PATH /usr/local)
 
 # Find OpenCV library files
 FIND_PACKAGE( OpenCV REQUIRED )
