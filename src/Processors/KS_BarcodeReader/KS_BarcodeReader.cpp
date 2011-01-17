@@ -22,10 +22,12 @@
 #include <exception>
 #include <zxing/Exception.h>
 #include <zxing/common/IllegalArgumentException.h>
+#include <zxing/DecodeHints.h>
 
 #include <zxing/qrcode/QRCodeReader.h>
+#include <zxing/oned/MultiFormatOneDReader.h>
 
-
+#include "zbar/zbar.h"
 
 #include <vector>
 
@@ -44,6 +46,8 @@ KS_BarcodeReader::KS_BarcodeReader(const std::string & name) : Base::Component(n
 	show_format = false;
 	tryHarder = false;
 	show_filename = false;
+
+	hybrid = true;
 
 }
 
@@ -89,149 +93,119 @@ bool KS_BarcodeReader::onStart()
 void KS_BarcodeReader::onNewImage()
 {
 	LOG(LTRACE) << "KS_BarcodeReader::onNewImage\n";
+
+    // create a reader
+    zbar::ImageScanner scanner;
+
+    // configure the reader
+    scanner.set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 1);
+
 	try {
-		Magick::Image img = in_img.read();
+		Magick::Image magick = in_img.read();
 
-		  try {
-		    Ref<MagickBitmapSource> source(new MagickBitmapSource(img));
+		int width = magick.columns();   // extract dimensions
+		int height = magick.rows();
+		Magick::Blob blob;              // extract the raw data
+		magick.modifyImage();
+		magick.write(&blob, "GRAY", 8);
+		const void *raw = blob.data();
 
-		    Ref<Binarizer> binarizer(NULL);
-//		    if (false) {
-//		      binarizer = new LocalBlockBinarizer(source);
-//		    } else {
-		      binarizer = new GlobalHistogramBinarizer(source);
-//		    }
+		// wrap image data
+		zbar::Image image(width, height, "Y800", raw, width * height);
 
+		// scan the image for barcodes
+		int n = scanner.scan(image);
 
-		    Ref<BinaryBitmap> image(new BinaryBitmap(binarizer));
-		    zxing::qrcode::QRCodeReader reader;
-		    Ref<Result> result(reader.decode(image));
+		if(n)
+			// extract results
+			for(zbar::Image::SymbolIterator symbol = image.symbol_begin();
+				symbol != image.symbol_end();
+				++symbol) {
+				// do something useful with results
+				cout << "decoded " << symbol->get_type_name()
+					 << " symbol \"" << symbol->get_data() << '"' << endl;
+			}
+		else
+			cout << "Not decoded" << endl;
 
-		    cout << result->getText()->getText() << endl;
-		  } catch (zxing::Exception& e) {
-			cerr << "Error: " << e.what() << endl;
-		  }
+	    // clean up
+	    image.set_data(NULL, 0);
 
 	} catch (...) {
 		LOG(LERROR) << "KS_BarcodeReader::onNewImage failed\n";
 	}
 
+//	string cell_result;
+//	int res = -1;
+//
+//	Ref<BitMatrix> matrix(NULL);
+//	Ref<Binarizer> binarizer(NULL);
+//	const char* result_format = "";
+//
+//	try {
+//		Magick::Image image = in_img.read();
+//
+////		image.write("tmp.jpg");
+//
+//		Ref<MagickBitmapSource> source(new MagickBitmapSource(image));
+//
+//		if (hybrid) {
+//		  binarizer = new HybridBinarizer(source);
+//		} else {
+//		  binarizer = new GlobalHistogramBinarizer(source);
+//		}
+//
+//		DecodeHints hints(DecodeHints::DEFAULT_HINT);
+//		hints.setTryHarder(tryHarder);
+//		Ref<BinaryBitmap> binary(new BinaryBitmap(binarizer));
+//		Ref<Result> result(decode(binary, hints));
+//
+//		cell_result = result->getText()->getText();
+//
+//		result_format = barcodeFormatNames[result->getBarcodeFormat()];
+//		res = 0;
+//	} catch (ReaderException e) {
+//		cell_result = "zxing::ReaderException: " + string(e.what());
+//		res = -2;
+//	} catch (zxing::IllegalArgumentException& e) {
+//		cell_result = "zxing::IllegalArgumentException: " + string(e.what());
+//		res = -3;
+//	} catch (zxing::Exception& e) {
+//		cell_result = "zxing::Exception: " + string(e.what());
+//		res = -4;
+//	} catch (std::exception& e) {
+//		cell_result = "std::exception: " + string(e.what());
+//		res = -5;
+//	}
+//
+////		if (cell_result.compare(expected)) {
+////			res = -6;
+////			if (!raw_dump) {
+////				cout << (hybrid ? "Hybrid" : "Global") << " binarizer failed:\n";
+////				if (expected.length() >= 0) {
+////				  cout << "  Expected: " << expected << "\n";
+////				}
+//			cout << "  Detected: " << cell_result << endl;
+////			}
+////		}
+//
+//
+//	if (raw_dump && !hybrid) {/* don't print twice, and global is a bit better */
+//		cout << cell_result;
+//	if (show_format) {
+//	  cout << " " << result_format;
+//	}
+//	cout << endl;
+//
+//	}
+////		  return res;
+
+
 }
 
-Ref<Result> KS_BarcodeReader::decode(Ref<BinaryBitmap> image, DecodeHints hints)
-{
-  Ref<Reader> reader(new MultiFormatReader);
-  return reader->decode(image, hints);
-}
-
-
-int KS_BarcodeReader::test_image(Image& image, bool hybrid, string expected = "")
-{
-
-  string cell_result;
-  int res = -1;
-
-  Ref<BitMatrix> matrix(NULL);
-  Ref<Binarizer> binarizer(NULL);
-  const char* result_format = "";
-
-  try {
-    Ref<MagickBitmapSource> source(new MagickBitmapSource(image));
-
-    if (hybrid) {
-      binarizer = new HybridBinarizer(source);
-    } else {
-      binarizer = new GlobalHistogramBinarizer(source);
-    }
-
-    DecodeHints hints(DecodeHints::DEFAULT_HINT);
-    hints.setTryHarder(tryHarder);
-    Ref<BinaryBitmap> binary(new BinaryBitmap(binarizer));
-    Ref<Result> result(decode(binary, hints));
-    cell_result = result->getText()->getText();
-    result_format = barcodeFormatNames[result->getBarcodeFormat()];
-    res = 0;
-  } catch (ReaderException e) {
-    cell_result = "zxing::ReaderException: " + string(e.what());
-    res = -2;
-  } catch (zxing::IllegalArgumentException& e) {
-    cell_result = "zxing::IllegalArgumentException: " + string(e.what());
-    res = -3;
-  } catch (zxing::Exception& e) {
-    cell_result = "zxing::Exception: " + string(e.what());
-    res = -4;
-  } catch (std::exception& e) {
-    cell_result = "std::exception: " + string(e.what());
-    res = -5;
-  }
-
-  if (cell_result.compare(expected)) {
-    res = -6;
-    if (!raw_dump) {
-        cout << (hybrid ? "Hybrid" : "Global") << " binarizer failed:\n";
-        if (expected.length() >= 0) {
-          cout << "  Expected: " << expected << "\n";
-        }
-        cout << "  Detected: " << cell_result << endl;
-    }
-  }
-
-
-  if (raw_dump && !hybrid) {/* don't print twice, and global is a bit better */
-    cout << cell_result;
-    if (show_format) {
-      cout << " " << result_format;
-    }
-    cout << endl;
-
-  }
-  return res;
-}
-
-int KS_BarcodeReader::test_image_hybrid(Image& image, string expected = "")
-{
-  return test_image(image, true, expected);
-}
-
-int KS_BarcodeReader::test_image_global(Image& image, string expected = "")
-{
-  return test_image(image, false, expected);
-}
-
-string KS_BarcodeReader::get_expected(string imagefilename)
-{
-  string textfilename = imagefilename;
-  int dotpos = textfilename.rfind(".");
-  textfilename.replace(dotpos+1, textfilename.length() - dotpos - 1, "txt");
-  char data[MAX_EXPECTED];
-  FILE *fp = fopen(textfilename.data(), "rb");
-
-  if (!fp) {
-    // could not open file
-    return "";
-  }
-  // get file size
-  fseek(fp, 0, SEEK_END);
-  int toread = ftell(fp);
-  rewind(fp);
-
-  if (toread > MAX_EXPECTED) {
-  	cerr << "MAX_EXPECTED = " << MAX_EXPECTED << " but file '" << textfilename << "' has " << toread
-  	     << " bytes! Skipping..." << endl;
-    fclose(fp);
-    return "";
-  }
-
-  int nread = fread(data, sizeof(char), toread, fp);
-  if (nread != toread) {
-    cerr << "Could not read entire contents of file '" << textfilename << "'! Skipping..." << endl;
-    fclose(fp);
-    return "";
-  }
-  fclose(fp);
-  data[nread] = '\0';
-  string expected(data);
-  return expected;
+Ref<Result> KS_BarcodeReader::decode(Ref<BinaryBitmap> image, DecodeHints hints) {
+	Ref<Reader> reader(new MultiFormatReader);
+	return reader->decode(image, hints);
 }
 
 }//: namespace BCReader

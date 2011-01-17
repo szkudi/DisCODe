@@ -75,9 +75,9 @@ bool CvWindow_Sink::onStep()
 			if (img[i].empty()) {
 				LOG(LWARNING) << name() << ": image " << i << " empty";
 			}
-
-			// Refresh image.
-			imshow( props.title + id, img[i] );
+			else
+			    // Refresh image.
+			    imshow( props.title + id, img[i] );
 		}
 
 		waitKey( 10 );

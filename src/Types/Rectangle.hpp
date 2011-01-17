@@ -29,6 +29,17 @@ public:
 		return new Rectangle(*this);
 	}
 
+	cv::Point get(int pos){
+		switch(pos){
+			case 0:
+				return p1;
+			case 1:
+				return p2;
+			default:
+				return cv::Point();
+		}
+	}
+
 private:
 	const cv::Point p1, p2;
 };

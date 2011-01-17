@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Task>
+<!-- List of components -->
+	<Components>
+	
+        <ImageSource type="CameraUniCap" thread="Thread1" group="s1">
+            <dev>
+				<device>/dev/video0</device>
+				<input>Composite1</input>
+				<norm>PAL-BG</norm>
+			</dev>
+		</ImageSource>
+<!--
+	
+		<Seq1 type="Sequence" thread="Thread1" group="s1">
+			<directory>/home/kszkudla/workspace/images/</directory>
+			<sort>false</sort>
+		</Seq1>
+
+-->
+		<Prep1 type="KS_CvMat2MagickImage" thread="Thread1" group="s1">
+		</Prep1>
+		
+		<Prep2 type="KS_MagickImage2CvMat" thread="Thread1" groups="s1">
+		</Prep2>
+		
+		<Prep3 type="KS_BarcodeReader" thread="Thread1" groups="s1">
+		</Prep3>
+		
+		<Window type="CvWindow" thread="Thread1" group="s1">
+			<title>Preview</title>
+		</Window>
+	
+	</Components>
+
+<!-- Threads of execution -->
+
+	<Executors>
+		<Thread1 type="continuous">
+<!--
+				
+			<main_component>Seq1</main_component>
+			
+-->
+			<main_component>ImageSource</main_component>
+			<interval>0.5</interval>
+<!--
+		
+			<iterations>10</iterations>
+			
+-->
+		</Thread1>
+	</Executors>
+<!--
+	
+	<Executors>
+		<Thread1 type="periodic">
+			<main_component>ImageSource</main_component>
+			<interval>0.1</interval>
+		</Thread1>
+	</Executors>
+	-->
+<!-- Event connections -->
+	<Events>
+		
+		<Event source="ImageSource.newImage" destination="Prep1.onNewImage"/>
+<!--
+		
+		<Event source="Seq1.newImage" destination="Prep1.onNewImage"/>
+	
+-->
+		<Event source="Prep1.newImage" destination="Prep2.onNewImage"/>
+		<Event source="Prep1.newImage" destination="Prep3.onNewImage"/>
+		<Event source="Prep2.newImage" destination="Window.onNewImage"/>
+	</Events>
+
+<!-- Data stream assignments -->
+	<DataStreams>
+<!--
+	
+		<Seq1>
+			<out_img type="out" group="Con1"/>
+		</Seq1>
+	
+-->
+		<ImageSource>
+			<out_img type="out" group="Con1"/>	
+		</ImageSource>
+		
+		<Prep1>
+			<in_img type="in" group="Con1"/>
+			<out_img type="out" group="ImageMagickIMG"/>
+		</Prep1>
+
+		<Prep2>
+			<in_img type="in" group="ImageMagickIMG"/>
+			<out_img type="out" group="Con3"/>
+		</Prep2>
+		
+		<Prep3>
+			<in_img type="in" group="ImageMagickIMG"/>	
+		</Prep3>
+		
+		<Window>
+			<in_img type="in" group="Con3"/>
+		</Window>
+	</DataStreams>
+
+</Task>

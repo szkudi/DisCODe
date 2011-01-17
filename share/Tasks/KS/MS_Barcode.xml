@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Task>
+	<!-- List of components -->
+	<Components>
+<!--
+		<Movie type="Movie" thread="Thread1" group="s1">
+				<filename>output.avi</filename>
+		</Movie>
+-->
+
+
+ <!--       <ImageSource type="CameraUniCap" thread="Thread1" group="s1">
+            <dev>
+
+                        
+				<device>/dev/video0</device>
+				<input>Composite1</input>
+				
+				<device>/dev/video1</device>
+				<input>S-Video</input>
+	
+				<norm>PAL-BG</norm>
+			</dev>
+		</ImageSource> 
+-->
+	 
+		 <ImageSource type="CameraGigE" thread="Thread1" group="s1">
+			<Address>192.168.1.2</Address>
+			<Controls>
+				<Gain>
+					<Mode>Manual</Mode>
+					<Value>0</Value>
+				</Gain>
+				<Exposure>
+					<Mode>Manual</Mode>
+					<Value>16500</Value>
+				</Exposure>
+			</Controls>
+			<ImageFormat>
+				<ROI>
+					<Width>1280</Width>
+					<Height>960</Height>
+				</ROI>
+			</ImageFormat>
+		</ImageSource>
+		
+
+		
+		<ColorConv type="CvColorConv" thread="Thread1" group="s1">
+			<type>BGR2GRAY</type>
+		</ColorConv>
+
+		<ROI type="KS_ROICrop" thread="Thread1" group="s1">		
+		</ROI>
+		
+		<Timer type="ExecTimer" thread="Thread1" group="s1">
+		</Timer>
+
+		<M1 type="MS_Barcode_Macro" thread="Thread1" group="s1">
+			<kernel_1>
+				1  1  1
+				0  0  0
+			   -1 -1 -1
+			</kernel_1>
+			<kernel_2>
+				1  0 -1
+				1  0 -1
+			    1  0 -1
+			</kernel_2>
+
+			<thresh>0.15</thresh>
+
+			<dil0>5</dil0>
+			<dil1>10</dil1>
+			<dil2>10</dil2>
+			<ero>20</ero>	
+		</M1>
+
+		<M2 type="MS_Barcode_Macro" thread="Thread2" group="s1">
+			<kernel_1>
+				1  1  0
+				1  0 -1
+			    0 -1 -1
+			</kernel_1>
+			<kernel_2>
+				0 -1 -1
+				1  0 -1
+			    1  1  0
+			</kernel_2>
+
+			<thresh>0.15</thresh>
+			<dil0>5</dil0>
+			<dil1>10</dil1>
+			<dil2>10</dil2>
+			<ero>20</ero>
+		</M2>
+
+		<M3 type="MS_Barcode_Macro" thread="Thread1" group="s1">
+			<kernel_1>
+				1  1  0
+			   -1  0  1
+			    0 -1 -1
+			</kernel_1>
+			<kernel_2>
+				0  1 -1
+				1  0 -1
+			    1 -1  0
+			</kernel_2>
+
+			<thresh>0.15</thresh>
+			<dil0>5</dil0>
+			<dil1>10</dil1>
+			<dil2>10</dil2>
+			<ero>20</ero>
+		</M3>
+
+		<M4 type="MS_Barcode_Macro" thread="Thread2" group="s1">
+			<kernel_1>
+				0  1  1
+				1  0 -1
+			   -1 -1  0
+			</kernel_1>
+			<kernel_2>
+				1 -1  0
+				1  0 -1
+			    0  1 -1
+			</kernel_2>
+
+			<thresh>0.15</thresh>
+			<dil0>5</dil0>
+			<dil1>10</dil1>
+			<dil2>10</dil2>
+			<ero>20</ero>
+		</M4>
+
+		<Prep type="MS_Barcode_Prepare" thread="Thread1" group="s1">
+		</Prep>
+
+		<Dec type="MS_Barcode_Decide" thread="Thread1" group="s1">
+		</Dec>
+
+
+		<Blob type="BlobExtractor" thread="Thread1" group="s1">
+			<min_size>2000</min_size>
+		</Blob> 
+
+		
+		<MAT2IMG type="KS_CvMat2MagickImage" thread="Thread1" group="s1">
+		</MAT2IMG>
+			
+		<BCR type="KS_BarcodeReader" thread="Thread1" groups="s1">
+		</BCR>
+		
+		<Thr type="CvThreshold" thread="Thread1" group="s1">				
+				<type>binary</type>
+				<maxval>255</maxval>
+				<thresh>45</thresh>				
+		</Thr>
+						
+		<InWindow type="CvWindow" thread="WndExec" group="s1">
+			<title>Frame</title>
+			<count>3</count>
+		</InWindow>
+
+	</Components>
+
+	<!-- Threads of execution -->
+	<Executors>
+		<Thread1 type="continuous">
+			<main_component>ImageSource</main_component>
+			<interval>2.0</interval>			
+		</Thread1>
+
+		<WndExec type="periodic">
+			<main_component>InWindow</main_component>
+			<interval>0.1</interval>
+		</WndExec>
+		
+		<Thread2 type="passive">
+		</Thread2>
+		
+		<Thread3 type="passive">
+		</Thread3>
+		
+		<Thread4 type="passive">
+		</Thread4>
+	</Executors>
+
+	<!-- Event connections -->
+	<Events>
+<!--		<Event source="ImageSource.newImage"     destination="Timer.onStartExec"/>	-->	
+<!--		<Event source="Timer.started"      destination="ColorConv.onNewImage"/>	-->
+		<event source="ImageSource.newImage"	destination="ColorConv.onNewImage" />	
+		<Event source="ImageSource.newImage"     destination="InWindow.onNewImage0"/>
+		
+<!--		<Event source="ROI.newImage"	destination="InWindow.onNewImage1"/>	-->
+<!--		<Event source="Thr.newImage"	destination="InWindow.onNewImage1>	-->
+<!--		<Event source="Prep.newImage"		destination="InWindow.onNewImage2"/>	-->
+
+		<Event source="ColorConv.newImage" destination="M1.onNewImage" type="async"/>
+		<Event source="ColorConv.newImage" destination="M2.onNewImage" type="async"/>
+		<Event source="ColorConv.newImage" destination="M3.onNewImage" type="async"/>
+		<Event source="ColorConv.newImage" destination="M4.onNewImage" type="async"/>
+
+		<Event source="M1.newImage"        destination="Prep.onNewImage1"/>
+		<Event source="M2.newImage"        destination="Prep.onNewImage2"/>
+		<Event source="M3.newImage"        destination="Prep.onNewImage3"/>
+		<Event source="M4.newImage"        destination="Prep.onNewImage4"/>
+
+		<Event source="Prep.newImage"      destination="Blob.onNewImage"/>
+		<Event source="Blob.newBlobs"      destination="Dec.onNewBlobs"/>
+		
+
+		<Event source="ImageSource.newImage" destination="ROI.onNewImage"/>
+		<Event source="Dec.newImage"	destination="ROI.onNewDrawable"/>
+		
+<!--		<Event source="ROI.newImage" destination="Thr.onNewImage"/>	-->	
+		
+		<Event source="ROI.newImage"	destination="MAT2IMG.onNewImage"/>
+		<Event source="MAT2IMG.newImage"	destination="BCR.onNewImage"/>
+	
+
+<!--		<Event source="Prep.newImage"      destination="Timer.onStopExec"/>		-->
+<!--		<Event source="Prep.newImage"      destination="Window.onNewImage"/>	-->
+<!--		<Event source="Timer.stopped"      destination="ImageSource.onTrigger" type="async"/> -->
+	</Events>
+
+	<!-- Data stream assignments -->
+	<DataStreams>
+<!--
+		
+		<Movie>
+			<out_img type="out" group="Con1"/>
+		</Movie>
+		
+-->
+		<ImageSource>
+			<out_img type="out" group="Con1"/>	
+		</ImageSource>
+
+		<ColorConv>
+			<in_img type="in" group="Con1"/>
+			<out_img type="out" group="Con2"/>
+		</ColorConv>
+
+		<M1>
+			<in_img type="in" group="Con2"/>
+			<out_img type="out" group="ConM1"/>
+		</M1>
+
+		<M2>
+			<in_img type="in" group="Con2"/>
+			<out_img type="out" group="ConM2"/>
+		</M2>
+
+		<M3>
+			<in_img type="in" group="Con2"/>
+			<out_img type="out" group="ConM3"/>
+		</M3>
+
+		<M4>
+			<in_img type="in" group="Con2"/>
+			<out_img type="out" group="ConM4"/>
+		</M4>
+
+		<Prep>
+			<in_img1 type="in" group="ConM1"/>
+			<in_img2 type="in" group="ConM2"/>
+			<in_img3 type="in" group="ConM3"/>
+			<in_img4 type="in" group="ConM4"/>
+			<out_img type="out" group="Con3"/>
+		</Prep>
+
+		<Blob>
+			<in_img    type="in"  group="Con3"/>
+			<out_blobs type="out" group="con_blobs"/>
+		</Blob>
+
+		<Dec>
+			<in_blobs  type="in"  group="con_blobs"/>
+			<out_signs type="out" group="con_signs"/>
+		</Dec>
+
+		
+		<ROI>
+			<in_img type="in" group="Con2"/>
+			<in_container type="in" group="con_signs"/>
+			<out_img type="out" group="rout"/>	
+		</ROI>
+		
+		<MAT2IMG>
+			<in_img type="in" group="rout"/>
+			<out_img type="out" group="magick"/>			
+		</MAT2IMG>
+		
+		<BCR>
+			<in_img type="in" group="magick"/>	
+		</BCR>
+		
+		<Thr>
+			<in_img type="in" group="rout"/>
+			<out_img type="out" group="thr"/>
+		</Thr>
+		
+		<InWindow>
+			<in_draw0 type="in" group="con_signs"/>
+			<in_img0 type="in" group="Con1"/>
+			<in_img1 type="in" group="rout"/>
+			<in_img2 type="in" group="Con3"/>
+		</InWindow>
+	</DataStreams>
+
+</Task>

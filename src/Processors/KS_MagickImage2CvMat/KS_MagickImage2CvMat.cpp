@@ -79,20 +79,26 @@ void KS_MagickImage2CvMat::onNewImage()
 
 		if(ct == Magick::RGBColorspace){
 //			std::cout << "AFTER:: RGB channels" << std::endl;
-			pixels = (char*)malloc(sizeof(char) * 3 * size.height * size.width);
+//			pixels = (char*)malloc(sizeof(char) * 3 * size.height * size.width);
+			pixels = new char[sizeof(char) * 3 * size.height * size.width];
 			img.write(0, 0, size.width, size.height, "BGR", MagickCore::CharPixel, pixels);
 			mimg = cv::Mat(size, CV_8UC3, pixels );
 		}
 		else if(ct == Magick::GRAYColorspace){
 //			std::cout << "AFTER:: Single channel" << std::endl;
-			pixels = (char*)malloc(sizeof(char) * size.height * size.width);
+//			pixels = (char*)malloc(sizeof(char) * size.height * size.width);
+			pixels = new char[sizeof(char) * size.height * size.width];
 			img.write(0, 0, size.width, size.height, "G", MagickCore::CharPixel, pixels);
 			mimg = cv::Mat(size, CV_8UC1, pixels );
 		}
 
-		out_img.write(mimg);
+//		free(pixels);
 
+		out_img.write(mimg);
 		newImage->raise();
+
+		delete[] pixels;
+
 	} catch (...) {
 		LOG(LERROR) << "KS_MagickImage2CvMat::onNewImage failed\n";
 	}

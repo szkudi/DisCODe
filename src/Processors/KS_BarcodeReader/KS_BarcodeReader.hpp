@@ -19,6 +19,7 @@
 #include <zxing/common/Counted.h>
 #include <zxing/BinaryBitmap.h>
 #include <zxing/DecodeHints.h>
+
 #include <ImageMagick/Magick++.h>
 
 #include <zxing/Result.h>
@@ -128,15 +129,12 @@ protected:
 
 private:
 	Ref<Result> decode(Ref<BinaryBitmap> image, DecodeHints hints);
-	int test_image(Magick::Image& image, bool hybrid, string expected);
-	int test_image_hybrid(Magick::Image& image, string expected);
-	int test_image_global(Magick::Image& image, string expected);
-	string get_expected(string imagefilename);
 
-	static bool raw_dump;
-	static bool show_format;
-	static bool tryHarder;
-	static bool show_filename;
+	bool raw_dump;
+	bool show_format;
+	bool tryHarder;
+	bool show_filename;
+	bool hybrid;
 
 	static const int MAX_EXPECTED = 1024;
 };
